@@ -31,6 +31,8 @@ else:
 
 #Check for database
 if not os.path.exists("database.db"):
+    print("Database not found. Attempting to create database.")
+    open("database.db", "w").close()
     # Create the database and table if it doesn't exist
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
