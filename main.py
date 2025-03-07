@@ -1,3 +1,5 @@
+print("Starting Vipper Timekeeping Discord Bot Version 1.0.0")
+
 import json
 import sqlite3
 import pytz
