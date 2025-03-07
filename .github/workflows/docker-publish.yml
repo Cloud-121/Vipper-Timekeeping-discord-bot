@@ -27,8 +27,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t cloudfoxies/Vipper-Timekeeping-discord-bot:latest .
+          docker build -t cloudfoxies/vipper-timekeeping-discord-bot:latest .
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push cloudfoxies/Vipper-Timekeeping-discord-bot:latest
+          docker push cloudfoxies/vipper-timekeeping-discord-bot:latest
