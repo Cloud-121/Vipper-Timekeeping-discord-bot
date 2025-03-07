@@ -1,6 +1,6 @@
-version = "1.2"
+botversion = "1.3"
 
-print(f"Starting Vipper Timekeeping Discord Bot Version {version}")
+print(f"Starting Vipper Timekeeping Discord Bot Version {botversion}")
 
 import json
 import sqlite3
@@ -254,7 +254,7 @@ async def whatsthetime(interaction: discord.Interaction, user: Optional[discord.
 #Version command
 @bot.tree.command(name="version", description="Show the bot's version")
 async def version(interaction: discord.Interaction):
-    await interaction.response.send_message(f"Vipper Timekeeping Discord Bot v{version}", ephemeral=True)
+    await interaction.response.send_message(f"Vipper Timekeeping Discord Bot v{botversion}", ephemeral=True)
 
 # Slash command for showing the help message
 @bot.tree.command(name="help", description="Show the help message")
@@ -272,6 +272,8 @@ A few commands you can use are:
 `/whatsthetime [user]` - Show your current time in your registered timezone
 
 `/whatismytimezone` - Show your current registered timezone
+
+`/version` - Show the bot's version that's currently running
 
 `/help` - Show this help message (Look you found this one :3)
 """,
