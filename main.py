@@ -8,17 +8,47 @@ import datetime
 import asyncio
 from discord.ext import commands
 from typing import Optional
+from dotenv import load_dotenv
+import os
 
 # Load configuration from file
 # Check for a config.json if not load env
 try:
+    print("Attempting to load config.json")
     with open("config.json", "r") as config_file:
         config_data = json.load(config_file)
 
     discord_token = config_data.get("discord_token")
 except FileNotFoundError:
+    print("config.json not found. Attempting to load DISCORD_TOKEN from environment variable.")
     discord_token = os.getenv('DISCORD_TOKEN')
 
+if discord_token is None:
+    print("DISCORD_TOKEN not found in environment variable and config.json.")
+    exit(1)
+else:
+    print("DISCORD_TOKEN loaded.")
+
+#Check for database
+if not os.path.exists("database.db"):
+    # Create the database and table if it doesn't exist
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    
+    # Create the user_timezones table
+    cursor.execute('''
+        CREATE TABLE user_timezones (
+            discord_id INTEGER PRIMARY KEY,
+            timezone TEXT NOT NULL
+        )
+    ''')
+    
+    # Commit changes and close the connection
+    conn.commit()
+    conn.close()
+    print("Database and table created.")
+else:
+    print("Database was found.")
 
 # Set up bot with intents
 intents = discord.Intents.default()
