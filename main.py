@@ -3,6 +3,7 @@ import sqlite3
 import pytz
 import difflib
 import discord
+import re
 import datetime
 import asyncio
 from discord.ext import commands
@@ -13,13 +14,13 @@ with open("config.json", "r") as config_file:
     config_data = json.load(config_file)
 
 discord_token = config_data.get("discord_token")
-replace_message = config_data.get("replace_message")
 
 # Set up bot with intents
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Events
 @bot.event
 async def on_ready():
     print(f'Bot is ready. Logged in as {bot.user}')
@@ -30,6 +31,53 @@ async def on_ready():
         print(f"Synced {len(synced)} slash commands.")
     except Exception as e:
         print(f"Error syncing slash commands: {e}")
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return  # Ignore bot messages
+
+    with sqlite3.connect('database.db') as db:
+        cursor = db.cursor()
+        cursor.execute('SELECT timezone FROM user_timezones WHERE discord_id = ?', (message.author.id,))
+        result = cursor.fetchone()
+
+    if result:
+        timezone = result[0]
+        tz = pytz.timezone(timezone)
+        
+        # Time detection regex (Supports HH:MM, HH:MM AM/PM)
+        time_patterns = [
+            r'\b([01]?[0-9]|2[0-3]):([0-5][0-9])\b',  # 24-hour format (HH:MM)
+            r'\b(1[0-2]|0?[1-9]):([0-5][0-9]) ?(AM|PM|am|pm)\b'  # 12-hour format (HH:MM AM/PM)
+        ]
+
+        for pattern in time_patterns:
+            match = re.search(pattern, message.content)
+            if match:
+                time_str = match.group(0)
+
+                # Convert to datetime object
+                try:
+                    if 'AM' in time_str.upper() or 'PM' in time_str.upper():
+                        time_obj = datetime.datetime.strptime(time_str, '%I:%M %p')
+                    else:
+                        time_obj = datetime.datetime.strptime(time_str, '%H:%M')
+                    
+                    now = datetime.datetime.now(tz)
+                    time_with_date = now.replace(hour=time_obj.hour, minute=time_obj.minute, second=0, microsecond=0)
+
+                    # Convert to Unix timestamp
+                    unix_timestamp = int(time_with_date.timestamp())
+
+                    # Send Discord timestamp format
+                    await message.channel.send(f"<t:{unix_timestamp}:t>")
+                except ValueError:
+                    pass  # Ignore invalid formats
+
+    await bot.process_commands(message)
+
+#   Commands
 
 @bot.command(name='ping')
 async def ping(ctx):
@@ -156,13 +204,16 @@ async def whatsthetime(interaction: discord.Interaction, user: Optional[discord.
     else:
         await interaction.response.send_message("The user does not have a registered timezone.", ephemeral=True)
 
+
 # Slash command for showing the help message
 @bot.tree.command(name="help", description="Show the help message")
 async def help(interaction: discord.Interaction):
     await interaction.response.send_message(
         """
-Hiya, This bot was developed by @Cloud-121. I designed this bot to help discord servers with users in multiple timezones to know each others time and be able to say there time simply without having to pull up a unix clock. 
+Hiya, This bot was developed by [@Cloud-121](https://github.com/Cloud-121). I designed this bot to help discord servers with users in multiple timezones to know each others time and be able to say there time simply without having to pull up a unix clock. 
+
 This bot is completely free and open source on my github [here](https://github.com/Cloud-121/Vipper-Timekeeping-discord-bot).
+
 A few commands you can use are:
 
 `/registertimezone [timezone or currenttime]` - Register your timezone
