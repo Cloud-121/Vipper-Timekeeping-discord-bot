@@ -1,4 +1,4 @@
-botversion = "1.6"
+botversion = "1.8"
 
 print(f"Starting Vipper Timekeeping Discord Bot Version {botversion}")
 
@@ -124,7 +124,8 @@ async def on_message(message):
 async def ping(ctx):
     await ctx.send('Pong!')
 
-# Slash command for registering a timezone@bot.tree.command(name="registertimezone", description="Register your timezone")
+# Slash command for registering a timezone
+
 @bot.tree.command(name="registertimezone", description="Register your timezone")
 async def registertimezone(interaction: discord.Interaction, timezone: Optional[str] = None, currenttime: Optional[str] = None):
     # Check if user already has a timezone in the database
@@ -134,10 +135,16 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
         result = cursor.fetchone()
 
     if timezone is None and currenttime is None:
-        await interaction.response.send_message(
-            "Please provide either a valid timezone or your current time in 24h format.",
-            ephemeral=True
-        )
+        try:
+            await interaction.response.send_message(
+                "Please provide either a valid timezone or your current time in 24h format.",
+                ephemeral=True
+            )
+        except discord.errors.InteractionResponded:
+            await interaction.followup.send(
+                "Please provide either a valid timezone or your current time in 24h format.",
+                ephemeral=True
+            )
         return
 
     # Handle timezone provided directly
@@ -147,10 +154,16 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
             if closest_match:
                 timezone = closest_match[0]
             else:
-                await interaction.response.send_message(
-                    f"'{timezone}' is not a valid timezone.",
-                    ephemeral=True
-                )
+                try:
+                    await interaction.response.send_message(
+                        f"'{timezone}' is not a valid timezone.",
+                        ephemeral=True
+                    )
+                except discord.errors.InteractionResponded:
+                    await interaction.followup.send(
+                        f"'{timezone}' is not a valid timezone.",
+                        ephemeral=True
+                    )
                 return
 
     # Handle current time provided for timezone determination
@@ -158,10 +171,16 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
         try:
             current_time = datetime.datetime.strptime(currenttime, '%H:%M')
         except ValueError:
-            await interaction.response.send_message(
-                f"Time '{currenttime}' is not valid. Please use the format HH:MM.",
-                ephemeral=True
-            )
+            try:
+                await interaction.response.send_message(
+                    f"Time '{currenttime}' is not valid. Please use the format HH:MM.",
+                    ephemeral=True
+                )
+            except discord.errors.InteractionResponded:
+                await interaction.followup.send(
+                    f"Time '{currenttime}' is not valid. Please use the format HH:MM.",
+                    ephemeral=True
+                )
             return
 
         now = datetime.datetime.now(pytz.UTC)
@@ -171,21 +190,34 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
         ]
 
         if not closest_timezones:
-            await interaction.response.send_message(
-                "No matching timezones found for the given time.",
-                ephemeral=True
-            )
+            try:
+                await interaction.response.send_message(
+                    "No matching timezones found for the given time.",
+                    ephemeral=True
+                )
+            except discord.errors.InteractionResponded:
+                await interaction.followup.send(
+                    "No matching timezones found for the given time.",
+                    ephemeral=True
+                )
             return
 
         if len(closest_timezones) > 1:
             chosen_timezone = closest_timezones[0]
             other_timezones_str = ', '.join(closest_timezones[1:])
             other_timezones_str = f"```{other_timezones_str}```"
-            await interaction.response.send_message(
-                f"Multiple timezones match your time: {currenttime}. I chose {chosen_timezone}. "
-                f"If incorrect, please manually select one from the list using the `/registertimezone [timezone]` command: \n {other_timezones_str}.",
-                ephemeral=True
-            )
+            try:
+                await interaction.response.send_message(
+                    f"Multiple timezones match your time: {currenttime}. I chose {chosen_timezone}. "
+                    f"If incorrect, please manually select one from the list using the `/registertimezone [timezone]` command: \n {other_timezones_str}.",
+                    ephemeral=True
+                )
+            except discord.errors.InteractionResponded:
+                await interaction.followup.send(
+                    f"Multiple timezones match your time: {currenttime}. I chose {chosen_timezone}. "
+                    f"If incorrect, please manually select one from the list using the `/registertimezone [timezone]` command: \n {other_timezones_str}.",
+                    ephemeral=True
+                )
             timezone = closest_timezones[0]
         else:
             timezone = closest_timezones[0]
@@ -205,8 +237,12 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
 
         db.commit()
 
-    # Use follow-up message after the initial response to avoid "InteractionResponded" error
-    await interaction.followup.send(message, ephemeral=True)
+    # Use response.send_message to avoid interaction error
+    try:
+        await interaction.response.send_message(message, ephemeral=True)
+    except discord.errors.InteractionResponded:
+        await interaction.followup.send(message, ephemeral=True)
+
 
 
 
