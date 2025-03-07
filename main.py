@@ -1,4 +1,6 @@
-print("Starting Vipper Timekeeping Discord Bot Version 1.0.0")
+version = "1.2"
+
+print(f"Starting Vipper Timekeeping Discord Bot Version {version}")
 
 import json
 import sqlite3
@@ -125,6 +127,7 @@ async def ping(ctx):
 # Slash command for registering a timezone
 @bot.tree.command(name="registertimezone", description="Register your timezone")
 async def registertimezone(interaction: discord.Interaction, timezone: Optional[str] = None, currenttime: Optional[str] = None):
+    # Check if user already has a timezone in the database
     with sqlite3.connect('data/database.db') as db:
         cursor = db.cursor()
         cursor.execute('SELECT timezone FROM user_timezones WHERE discord_id = ?', (interaction.user.id,))
@@ -137,7 +140,7 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
         )
         return
 
-    # If timezone is provided
+    # Handle timezone provided directly
     if timezone:
         if timezone not in pytz.all_timezones:
             closest_match = difflib.get_close_matches(timezone, pytz.all_timezones, n=1, cutoff=0)
@@ -150,7 +153,7 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
                 )
                 return
 
-    # If current time is provided
+    # Handle current time provided for timezone determination
     if currenttime:
         try:
             current_time = datetime.datetime.strptime(currenttime, '%H:%M')
@@ -195,19 +198,24 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
         else:
             timezone = closest_timezones[0]
 
-    # Insert or update timezone
+    # Now insert or update the timezone in the database
     with sqlite3.connect('data/database.db') as db:
         cursor = db.cursor()
+
         if result is None:
+            # User doesn't have a timezone yet, insert it
             cursor.execute('INSERT INTO user_timezones (discord_id, timezone) VALUES (?, ?)', (interaction.user.id, timezone))
             message = f"Timezone set to {timezone} for {interaction.user.name}!"
         else:
+            # User has a timezone, update it
             cursor.execute('UPDATE user_timezones SET timezone = ? WHERE discord_id = ?', (timezone, interaction.user.id))
             message = f"Timezone updated to {timezone} for {interaction.user.name}!"
 
         db.commit()
 
+    # Send confirmation message
     await interaction.response.send_message(message, ephemeral=True)
+
 
 # Slash command for showing the timezone registered for a user
 @bot.tree.command(name="whatismytimezone", description="Show your current registered timezone")
@@ -243,6 +251,10 @@ async def whatsthetime(interaction: discord.Interaction, user: Optional[discord.
     else:
         await interaction.response.send_message("The user does not have a registered timezone.", ephemeral=True)
 
+#Version command
+@bot.tree.command(name="version", description="Show the bot's version")
+async def version(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Vipper Timekeeping Discord Bot v{version}", ephemeral=True)
 
 # Slash command for showing the help message
 @bot.tree.command(name="help", description="Show the help message")
