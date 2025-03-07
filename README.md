@@ -8,4 +8,4 @@ A few commands you can use are:
 
 `/whatismytimezone` - Show your current registered timezone
 
-`/help` - Show this help message
+`/help` - Show a help message
