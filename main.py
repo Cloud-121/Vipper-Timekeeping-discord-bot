@@ -10,10 +10,15 @@ from discord.ext import commands
 from typing import Optional
 
 # Load configuration from file
-with open("config.json", "r") as config_file:
-    config_data = json.load(config_file)
+# Check for a config.json if not load env
+try:
+    with open("config.json", "r") as config_file:
+        config_data = json.load(config_file)
 
-discord_token = config_data.get("discord_token")
+    discord_token = config_data.get("discord_token")
+except FileNotFoundError:
+    discord_token = os.getenv('DISCORD_TOKEN')
+
 
 # Set up bot with intents
 intents = discord.Intents.default()
