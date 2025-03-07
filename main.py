@@ -1,4 +1,4 @@
-botversion = "1.3"
+botversion = "1.6"
 
 print(f"Starting Vipper Timekeeping Discord Bot Version {botversion}")
 
@@ -124,7 +124,7 @@ async def on_message(message):
 async def ping(ctx):
     await ctx.send('Pong!')
 
-# Slash command for registering a timezone
+# Slash command for registering a timezone@bot.tree.command(name="registertimezone", description="Register your timezone")
 @bot.tree.command(name="registertimezone", description="Register your timezone")
 async def registertimezone(interaction: discord.Interaction, timezone: Optional[str] = None, currenttime: Optional[str] = None):
     # Check if user already has a timezone in the database
@@ -164,7 +164,7 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
             )
             return
 
-        now = datetime.datetime.now(datetime.UTC)
+        now = datetime.datetime.now(pytz.UTC)
         closest_timezones = [
             zone for zone in pytz.all_timezones
             if now.astimezone(pytz.timezone(zone)).strftime('%H:%M') == currenttime
@@ -180,21 +180,13 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
         if len(closest_timezones) > 1:
             chosen_timezone = closest_timezones[0]
             other_timezones_str = ', '.join(closest_timezones[1:])
+            other_timezones_str = f"```{other_timezones_str}```"
             await interaction.response.send_message(
                 f"Multiple timezones match your time: {currenttime}. I chose {chosen_timezone}. "
-                f"If incorrect, please type one from the list: {other_timezones_str}.",
+                f"If incorrect, please manually select one from the list using the `/registertimezone [timezone]` command: \n {other_timezones_str}.",
                 ephemeral=True
             )
-
-            def check(message: discord.Message):
-                return message.author == interaction.user and message.channel == interaction.channel and message.content in closest_timezones
-
-            try:
-                response_message = await bot.wait_for('message', check=check, timeout=30)
-                timezone = response_message.content
-            except asyncio.TimeoutError:
-                await interaction.followup.send("Timed out. Please try again.", ephemeral=True)
-                return
+            timezone = closest_timezones[0]
         else:
             timezone = closest_timezones[0]
 
@@ -213,8 +205,9 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
 
         db.commit()
 
-    # Send confirmation message
-    await interaction.response.send_message(message, ephemeral=True)
+    # Use follow-up message after the initial response to avoid "InteractionResponded" error
+    await interaction.followup.send(message, ephemeral=True)
+
 
 
 # Slash command for showing the timezone registered for a user
