@@ -30,11 +30,11 @@ else:
     print("DISCORD_TOKEN loaded.")
 
 #Check for database
-if not os.path.exists("database.db"):
+if not os.path.exists("data/database.db"):
     print("Database not found. Attempting to create database.")
-    open("database.db", "w").close()
+    open("data/database.db", "w").close()
     # Create the database and table if it doesn't exist
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect("data/database.db")
     cursor = conn.cursor()
     
     # Create the user_timezones table
@@ -74,7 +74,7 @@ async def on_message(message):
     if message.author.bot:
         return  # Ignore bot messages
 
-    with sqlite3.connect('database.db') as db:
+    with sqlite3.connect('data/database.db') as db:
         cursor = db.cursor()
         cursor.execute('SELECT timezone FROM user_timezones WHERE discord_id = ?', (message.author.id,))
         result = cursor.fetchone()
@@ -123,7 +123,7 @@ async def ping(ctx):
 # Slash command for registering a timezone
 @bot.tree.command(name="registertimezone", description="Register your timezone")
 async def registertimezone(interaction: discord.Interaction, timezone: Optional[str] = None, currenttime: Optional[str] = None):
-    with sqlite3.connect('database.db') as db:
+    with sqlite3.connect('data/database.db') as db:
         cursor = db.cursor()
         cursor.execute('SELECT timezone FROM user_timezones WHERE discord_id = ?', (interaction.user.id,))
         result = cursor.fetchone()
@@ -194,7 +194,7 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
             timezone = closest_timezones[0]
 
     # Insert or update timezone
-    with sqlite3.connect('database.db') as db:
+    with sqlite3.connect('data/database.db') as db:
         cursor = db.cursor()
         if result is None:
             cursor.execute('INSERT INTO user_timezones (discord_id, timezone) VALUES (?, ?)', (interaction.user.id, timezone))
@@ -210,7 +210,7 @@ async def registertimezone(interaction: discord.Interaction, timezone: Optional[
 # Slash command for showing the timezone registered for a user
 @bot.tree.command(name="whatismytimezone", description="Show your current registered timezone")
 async def whatismytimezone(interaction: discord.Interaction):
-    with sqlite3.connect('database.db') as db:
+    with sqlite3.connect('data/database.db') as db:
         cursor = db.cursor()
         cursor.execute('SELECT timezone FROM user_timezones WHERE discord_id = ?', (interaction.user.id,))
         result = cursor.fetchone()
@@ -226,7 +226,7 @@ async def whatsthetime(interaction: discord.Interaction, user: Optional[discord.
     if user is None:
         user = interaction.user
 
-    with sqlite3.connect('database.db') as db:
+    with sqlite3.connect('data/database.db') as db:
         cursor = db.cursor()
         cursor.execute('SELECT timezone FROM user_timezones WHERE discord_id = ?', (user.id,))
         result = cursor.fetchone()

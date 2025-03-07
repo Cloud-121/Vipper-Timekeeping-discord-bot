@@ -1,4 +1,4 @@
 
 config.json
-database.db
+data/database.db
 /venv
