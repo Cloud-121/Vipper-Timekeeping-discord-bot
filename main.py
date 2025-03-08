@@ -1,4 +1,4 @@
-botversion = "1.8"
+botversion = "1.9"
 
 print(f"Starting Vipper Timekeeping Discord Bot Version {botversion}")
 
@@ -284,6 +284,34 @@ async def whatsthetime(interaction: discord.Interaction, user: Optional[discord.
 @bot.tree.command(name="version", description="Show the bot's version")
 async def version(interaction: discord.Interaction):
     await interaction.response.send_message(f"Vipper Timekeeping Discord Bot v{botversion}", ephemeral=True)
+
+# Slash command for setting another user's timezone if the current user has admin perms
+@bot.tree.command(name="setusertimezone", description="Set another user's timezone if you have admin permissions")
+@commands.has_permissions(administrator=True)
+async def setusertimezone(interaction: discord.Interaction, user: discord.Member, timezone: str):
+    # Validate the timezone
+    if timezone not in pytz.all_timezones:
+        await interaction.response.send_message(f"'{timezone}' is not a valid timezone. A list of valid timezones can be found here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones", ephemeral=True)
+        return
+
+    # Update the user's timezone in the database
+    with sqlite3.connect('data/database.db') as db:
+        cursor = db.cursor()
+        cursor.execute('SELECT timezone FROM user_timezones WHERE discord_id = ?', (user.id,))
+        result = cursor.fetchone()
+
+        if result is None:
+            # User doesn't have a timezone yet, insert it
+            cursor.execute('INSERT INTO user_timezones (discord_id, timezone) VALUES (?, ?)', (user.id, timezone))
+            message = f"Timezone set to {timezone} for {user.name}!"
+        else:
+            # User has a timezone, update it
+            cursor.execute('UPDATE user_timezones SET timezone = ? WHERE discord_id = ?', (timezone, user.id))
+            message = f"Timezone updated to {timezone} for {user.name}!"
+
+        db.commit()
+
+    await interaction.response.send_message(message, ephemeral=True)
 
 # Slash command for showing the help message
 @bot.tree.command(name="help", description="Show the help message")
