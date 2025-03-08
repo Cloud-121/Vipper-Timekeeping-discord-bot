@@ -1,4 +1,4 @@
-botversion = "1.9"
+botversion = "1.9.2"
 
 print(f"Starting Vipper Timekeeping Discord Bot Version {botversion}")
 
@@ -283,7 +283,7 @@ async def whatsthetime(interaction: discord.Interaction, user: Optional[discord.
 #Version command
 @bot.tree.command(name="version", description="Show the bot's version")
 async def version(interaction: discord.Interaction):
-    await interaction.response.send_message(f"Vipper Timekeeping Discord Bot v{botversion}", ephemeral=True)
+    await interaction.response.send_message(f"[Vipper Timekeeping Discord Bot](https://github.com/Cloud-121/Vipper-Timekeeping-discord-bot) v{botversion}], licensed under the [GPL-3.0 License](https://github.com/Cloud-121/Vipper-Timekeeping-discord-bot/blob/main/LICENSE)", ephemeral=True)
 
 # Slash command for setting another user's timezone if the current user has admin perms
 @bot.tree.command(name="setusertimezone", description="Set another user's timezone if you have admin permissions")
@@ -330,12 +330,15 @@ A few commands you can use are:
 
 `/whatismytimezone` - Show your current registered timezone
 
+`/setusertimezone [user] [timezone]` - Set another user's timezone only if you have admin permissions
+
 `/version` - Show the bot's version that's currently running
 
 `/help` - Show this help message (Look you found this one :3)
 """,
         ephemeral=True
     )
+
 
 # Run bot with token from config file
 bot.run(discord_token)
