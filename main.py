@@ -1,4 +1,4 @@
-botversion = "1.9.2"
+botversion = "1.9.3"
 
 print(f"Starting Vipper Timekeeping Discord Bot Version {botversion}")
 
@@ -283,7 +283,7 @@ async def whatsthetime(interaction: discord.Interaction, user: Optional[discord.
 #Version command
 @bot.tree.command(name="version", description="Show the bot's version")
 async def version(interaction: discord.Interaction):
-    await interaction.response.send_message(f"[Vipper Timekeeping Discord Bot](https://github.com/Cloud-121/Vipper-Timekeeping-discord-bot) v{botversion}], licensed under the [GPL-3.0 License](https://github.com/Cloud-121/Vipper-Timekeeping-discord-bot/blob/main/LICENSE)", ephemeral=True)
+    await interaction.response.send_message(f"[Vipper Timekeeping Discord Bot](https://github.com/Cloud-121/Vipper-Timekeeping-discord-bot) v{botversion}, licensed under the GPL-3.0 License", ephemeral=True)
 
 # Slash command for setting another user's timezone if the current user has admin perms
 @bot.tree.command(name="setusertimezone", description="Set another user's timezone if you have admin permissions")
@@ -305,9 +305,8 @@ async def setusertimezone(interaction: discord.Interaction, user: discord.Member
             cursor.execute('INSERT INTO user_timezones (discord_id, timezone) VALUES (?, ?)', (user.id, timezone))
             message = f"Timezone set to {timezone} for {user.name}!"
         else:
-            # User has a timezone, update it
-            cursor.execute('UPDATE user_timezones SET timezone = ? WHERE discord_id = ?', (timezone, user.id))
-            message = f"Timezone updated to {timezone} for {user.name}!"
+            # Admins aren't allowed to change other users' timezones if they already have one
+            message = f"You cannot change {user.name}'s timezone as they already have one set."
 
         db.commit()
 
