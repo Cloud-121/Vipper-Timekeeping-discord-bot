@@ -1,19 +1,14 @@
-# Vipper Timekeeping Discord Bot
+# Vipper Timekeeping Discord Bot  
 
-Hiya, This bot was developed by [@Cloud-121](https://github.com/Cloud-121). I designed this bot to help discord servers with users in multiple timezones to know each others time and be able to say there time simply without having to pull up a unix clock. 
+Hey there! This bot was created by [@Cloud-121](https://github.com/Cloud-121) to make it easier for Discord servers with members in different time zones to keep track of each other's local times. No need to pull up a Unix clock—just send a time, and the bot will automatically format it into a Discord timestamp!  
 
-This bot is completely free and open source on my github.
+It's completely free and open source on GitHub.  
 
-## A few commands you can use are:
+## Commands:  
 
-`/registertimezone [timezone or currenttime]` - Register your timezone
-
-`/whatsthetime [user]` - Show your current time in your registered timezone
-
-`/whatismytimezone` - Show your current registered timezone
-
-`/setusertimezone [user] [timezone]` - Set another user's timezone only if you have admin permissions
-
-`/version` - Show the bot's version that's currently running
-
-`/help` - Show this help message (Look you found this one :3)
+- `/registertimezone [timezone or current time]` – Set your timezone  
+- `/whatsthetime [user]` – Show the current time for a registered user  
+- `/whatismytimezone` – Display your registered timezone  
+- `/setusertimezone [user] [timezone]` – Admins can set another user’s timezone  
+- `/version` – Show the bot’s current version  
+- `/help` – Display this help message (You found it! :3)  
