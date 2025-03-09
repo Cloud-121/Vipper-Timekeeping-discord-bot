@@ -11,4 +11,4 @@ It's completely free and open source on GitHub.
 - `/whatismytimezone` – Display your registered timezone  
 - `/setusertimezone [user] [timezone]` – Admins can set another user’s timezone  
 - `/version` – Show the bot’s current version  
-- `/help` – Display this help message (You found it! :3)  
+- `/help` – Display this help message
